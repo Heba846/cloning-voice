@@ -1,0 +1,14 @@
+# Core: server + Egyptian Arabic/English voice cloning + lip-sync + translation
+fastapi>=0.110
+uvicorn>=0.29
+python-multipart>=0.0.9
+imageio-ffmpeg>=0.5
+huggingface-hub>=0.24
+cairo-tts==0.2.0
+opencv-python-headless>=4.8
+librosa>=0.10
+numba
+scipy
+tqdm
+transformers>=4.44
+sentencepiece

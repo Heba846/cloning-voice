@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>صوتك ستوديو — التطبيق</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="auth" class="auth">
+  <div class="card">
+    <a class="logo" href="/" style="justify-content:center;margin-bottom:14px"><span class="dot">🎙️</span><span class="brand">صوتك ستوديو</span></a>
+    <div class="tabs"><button class="active" data-mode="login">دخول</button><button data-mode="signup">حساب جديد</button></div>
+    <form id="authForm">
+      <div id="nameField" style="display:none"><label>الاسم</label><input name="name" placeholder="اسمك"></div>
+      <label>الإيميل</label><input name="email" type="email" required placeholder="you@example.com" dir="ltr">
+      <label>كلمة السر</label><input name="password" type="password" required minlength="8" placeholder="8 أحرف على الأقل" dir="ltr">
+      <button class="btn primary" style="width:100%;margin-top:18px" type="submit">دخول</button>
+      <p class="hint" style="text-align:center;margin-top:12px">بالتسجيل بتوافق إنك تستنسخ صوتك أنت فقط أو صوت حد أخد إذنه كتابياً.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="shell" class="app" style="display:none">
+  <aside class="side" id="side">
+    <a class="logo" href="/"><span class="dot">🎙️</span><span class="brand">صوتك ستوديو</span></a>
+    <nav>
+      <a href="#home" data-view="home">🏠 الرئيسية</a>
+      <a href="#voices" data-view="voices">🧬 أصواتي</a>
+      <a href="#speak" data-view="speak">🗣️ نص ← صوت</a>
+      <a href="#reel" data-view="reel">🎬 اعمل ريلز</a>
+      <a href="#dub" data-view="dub">🌍 دبلجة فيديو</a>
+      <a href="#library" data-view="library">📁 المكتبة</a>
+      <a href="#billing" data-view="billing">💳 الباقة</a>
+      <a href="#admin" data-view="admin" id="adminLink" style="display:none">🛠️ الإدارة</a>
+    </nav>
+    <div class="credits" style="margin-top:20px"><span>رصيدك</span><b id="credits">—</b><span id="planName" class="meta"></span>
+      <button class="btn sm ghost" id="logout" style="width:100%;margin-top:10px">خروج</button></div>
+  </aside>
+
+  <main class="main">
+    <button class="btn sm menu-btn" id="menuBtn">☰ القائمة</button>
+
+    <section class="view" id="view-home">
+      <h2>أهلاً <span id="userName"></span> 👋</h2>
+      <p class="sub">ابدأ من هنا: استنسخ صوتك مرة، وبعدها كل حاجة بضغطة.</p>
+      <div class="kpi"><div class="card"><b id="kVoices">0</b><span>أصوات</span></div><div class="card"><b id="kJobs">0</b><span>ملفات مولّدة</span></div><div class="card"><b id="kCredits">0</b><span>كريدت متاح</span></div></div>
+      <div class="grid g3">
+        <a class="card" href="#voices"><div class="ic">🧬</div><h3>1. استنسخ صوتك</h3><p>ارفع 30 ثانية تسجيل نضيف.</p></a>
+        <a class="card" href="#speak"><div class="ic">🗣️</div><h3>2. ولّد الصوت</h3><p>اكتب السكريبت بأي لغة.</p></a>
+        <a class="card" href="#reel"><div class="ic">🎬</div><h3>3. اطلع الريلز</h3><p>صورتك + صوتك = فيديو.</p></a>
+      </div>
+      <h3 style="margin-top:30px">آخر الأعمال</h3>
+      <div class="list" id="recentJobs"></div>
+    </section>
+
+    <section class="view" id="view-voices">
+      <h2>أصواتي</h2>
+      <p class="sub">نصايح للعينة: 30–60 ثانية، كلام طبيعي بإحساس، مكان هادي، بدون موسيقى. ينفع تسجلها من الموبايل.</p>
+      <div class="card">
+        <form id="cloneForm">
+          <div class="row"><div><label>اسم الصوت</label><input name="name" required placeholder="صوتي الأساسي"></div>
+          <div><label>لغة العينة</label><select name="language" id="cloneLang"></select></div></div>
+          <label>ملف العينة (صوت أو فيديو)</label><input name="sample" type="file" accept="audio/*,video/*" required>
+          <div class="hint">أو سجّل دلوقتي: <button type="button" class="btn sm" id="recBtn">🔴 تسجيل</button> <span id="recStatus"></span></div>
+          <button class="btn primary" style="margin-top:16px" type="submit">استنسخ الصوت (<span class="cloneCost"></span> كريدت)</button>
+        </form>
+      </div>
+      <div class="card" id="remoteCard" style="margin-top:14px;display:none"><h3 style="margin:0 0 6px">(أدمن) ربط صوت موجود على حساب ElevenLabs</h3><p class="hint">اربطه بحسابك مجاناً.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"><select id="remoteVoices" style="flex:1;min-width:200px"><option>— اضغط تحميل —</option></select><button class="btn sm" id="loadRemote">تحميل</button><button class="btn sm primary" id="importRemote">ربط</button></div></div>
+      <h3 style="margin-top:24px">الأصوات المحفوظة</h3>
+      <div class="list" id="voiceList"></div>
+    </section>
+
+    <section class="view" id="view-speak">
+      <h2>نص ← صوت</h2>
+      <p class="sub">اكتب بالعامية زي ما بتتكلم. لو عايزه يطلع بلغة تانية، اختارها وهنترجم ونتكلم بصوتك.</p>
+      <div class="card"><form id="ttsForm">
+        <div class="row"><div><label>الصوت</label><select name="voice_id" class="voiceSelect" required></select></div>
+        <div><label>يطلع بلغة</label><select name="translate_to" class="langSelect"><option value="">نفس لغة النص</option></select></div></div>
+        <label>السكريبت</label><textarea name="text" required maxlength="5000" placeholder="أهلاً بيكم… النهاردة هقولكم على حاجة هتغير شغلكم."></textarea>
+        <div class="hint"><span class="charCount">0</span> حرف ≈ <span class="costEst">0</span> كريدت</div>
+        <button class="btn primary" style="margin-top:16px" type="submit">ولّد الصوت</button>
+      </form></div>
+      <div class="list" id="ttsJobs" style="margin-top:16px"></div>
+    </section>
+
+    <section class="view" id="view-reel">
+      <h2>اعمل ريلز</h2>
+      <p class="sub">صورة واضحة لوشك (أو فيديو قصير ليك) + السكريبت بصوتك = فيديو عمودي جاهز للنشر.</p>
+      <div class="card"><form id="reelForm">
+        <label>صورتك أو فيديوك</label><input name="face" type="file" accept="image/*,video/*" required>
+        <div class="hint">صورة: وش واضح، إضاءة كويسة، مواجهة للكاميرا. فيديو: 5–15 ثانية بتبص للكاميرا وبوقك مقفول.</div>
+        <div class="row"><div><label>الصوت</label><select name="voice_id" class="voiceSelect"></select></div>
+        <div><label>يطلع بلغة</label><select name="translate_to" class="langSelect"><option value="">نفس لغة النص</option></select></div></div>
+        <label>السكريبت</label><textarea name="text" maxlength="5000" placeholder="اكتب اللي عايز تقوله في الفيديو…"></textarea>
+        <div class="hint"><span class="charCount">0</span> حرف ≈ <span class="costEst">0</span> كريدت + تكلفة الفيديو</div>
+        <label>أو ارفع ملف صوت جاهز بدل النص (اختياري)</label><input name="audio" type="file" accept="audio/*">
+        <label>محرك مزامنة الشفاه</label><select name="lipsync_engine"><option value="">الافتراضي (<span id="defLip"></span>)</option><option value="mux">سريع — بدون حركة شفاه (صورة متحركة + صوت)</option><option value="wav2lip">Wav2Lip — مزامنة شفاه (يحتاج تفعيل على السيرفر)</option><option value="latentsync">LatentSync — أعلى جودة (يحتاج GPU)</option></select>
+        <button class="btn primary" style="margin-top:16px" type="submit">اطلع الفيديو 🎬</button>
+      </form></div>
+      <div class="list" id="reelJobs" style="margin-top:16px"></div>
+    </section>
+
+    <section class="view" id="view-dub">
+      <h2>دبلجة فيديو</h2>
+      <p class="sub">ارفع فيديو أو صوت قديم ليك، واختار اللغة، ويطلعلك بنفس صوتك باللغة الجديدة. (ElevenLabs Dubbing)</p>
+      <div class="card"><form id="dubForm">
+        <label>الفيديو / الصوت</label><input name="media" type="file" accept="audio/*,video/*" required>
+        <div class="row"><div><label>اللغة الأصلية</label><select name="source_lang" class="langSelect"><option value="auto">تلقائي</option></select></div>
+        <div><label>اللغة المطلوبة</label><select name="target_lang" class="langSelect" required></select></div></div>
+        <button class="btn primary" style="margin-top:16px" type="submit">دبلج 🌍</button>
+      </form></div>
+      <div class="list" id="dubJobs" style="margin-top:16px"></div>
+    </section>
+
+    <section class="view" id="view-library">
+      <h2>المكتبة</h2><p class="sub">كل الملفات اللي ولّدتها. بتتحدث لوحدها.</p>
+      <div class="list" id="allJobs"></div>
+    </section>
+
+    <section class="view" id="view-billing">
+      <h2>الباقة والرصيد</h2>
+      <p class="sub">باقتك الحالية: <b id="billPlan"></b> — رصيدك: <b id="billCredits"></b> كريدت</p>
+      <div class="grid g4" id="billPlans"></div>
+      <h3 style="margin-top:28px">مفتاح الـ API (للمطورين / أتمتة)</h3>
+      <div class="card"><code id="apiKey"></code> <button class="btn sm" id="rotateKey" style="margin-right:8px">تجديد</button>
+        <p class="hint" style="margin-top:10px">استخدمه في الهيدر <code>X-API-Key</code> مع نفس الـ endpoints. التوثيق: <a href="/docs" target="_blank" style="color:var(--brand2)">/docs</a></p></div>
+      <h3 style="margin-top:28px">سجل الرصيد</h3><div class="list" id="ledger"></div>
+    </section>
+
+    <section class="view" id="view-admin">
+      <h2>الإدارة</h2><p class="sub">تفعيل الباقات بعد استلام التحويل، وإضافة كريدت يدوي.</p>
+      <div class="card"><form id="adminForm"><div class="row"><div><label>إيميل العميل</label><input name="user_email" type="email" required dir="ltr"></div><div><label>الباقة</label><select name="plan"><option value="">— بدون تغيير —</option><option value="free">free</option><option value="creator">creator</option><option value="pro">pro</option><option value="agency">agency</option></select></div></div>
+        <div class="row"><div><label>كريدت إضافي (+/-)</label><input name="delta" type="number" value="0"></div><div><label>السبب</label><input name="reason" value="payment_confirmed"></div></div>
+        <button class="btn primary" style="margin-top:16px">تنفيذ</button></form></div>
+      <h3 style="margin-top:24px">المستخدمون</h3><div class="list" id="adminUsers"></div>
+    </section>
+  </main>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

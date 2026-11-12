@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>صوتك — صوتك بكل اللغات وفيديو بمزامنة شفاه</title>
+<meta name="description" content="سجّلي عينة من صوتك، واكتبي أي نص بالعامية أو الإنجليزي، واطلعي صوت بصوتك وفيديو بمزامنة شفاه.">
+<meta name="theme-color" content="#0b0f1a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="logo"><span class="dot">🎙️</span> صوتك</div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="voice" class="active">🧬 صوتي</button>
+    <button data-tab="speak">🗣️ ولّد</button>
+    <button data-tab="video">🎬 فيديو</button>
+    <button data-tab="library">📁 ملفاتي</button>
+    <button data-tab="settings">⚙️ المحرك</button>
+  </nav>
+</header>
+
+<main>
+  <div class="status" id="engineStatus"></div>
+
+  <section class="tab active" id="tab-voice">
+    <h1>عينة صوتك</h1>
+    <p class="muted">سجّلي أو ارفعي 15–60 ثانية كلام طبيعي بإحساس، في مكان هادي، من غير موسيقى. العينة بتتحفظ في متصفحك بس.</p>
+    <div class="card">
+      <div class="row">
+        <button class="btn primary" id="recBtn">🔴 تسجيل من المايك</button>
+        <label class="btn">📂 رفع ملف صوت أو فيديو<input type="file" id="sampleFile" accept="audio/*,video/*" hidden></label>
+      </div>
+      <p class="hint" id="recStatus"></p>
+      <div id="samplePreview" hidden>
+        <audio controls id="sampleAudio"></audio>
+        <p class="hint">✓ العينة محفوظة (<span id="sampleMeta"></span>) <button class="link" id="clearSample">حذف</button></p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>⭐ صوتك على ElevenLabs (اختياري)</h3>
+      <p class="hint">لو حطيتي مفتاح ElevenLabs في تبويب المحرك، هتظهر هنا أصواتك المستنسخة من حسابك.</p>
+      <div class="row">
+        <select id="elVoices"><option value="">— مفيش مفتاح —</option></select>
+        <button class="btn" id="elRefresh">تحديث</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-speak">
+    <h1>ولّد كلام بصوتك</h1>
+    <div class="card">
+      <label>المحرك</label>
+      <select id="engine">
+        <option value="free">🆓 المحرك المجاني (Cairo-TTS للعامية والإنجليزي)</option>
+        <option value="el">⭐ ElevenLabs من حسابك (أعلى جودة)</option>
+      </select>
+      <div id="langRow"><label>لغة النص</label><select id="lang"><option value="ar-EG">🇪🇬 عامية مصرية</option><option value="en">🇬🇧 English</option><option value="ar">عربي فصحى</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="it">Italiano</option><option value="pt">Português</option><option value="tr">Türkçe</option><option value="ru">Русский</option><option value="hi">हिन्दी</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="sv">Svenska</option><option value="el">Ελληνικά</option><option value="he">עברית</option><option value="ms">Melayu</option><option value="sw">Kiswahili</option><option value="da">Dansk</option><option value="fi">Suomi</option><option value="no">Norsk</option></select></div>
+      <label>النص</label>
+      <textarea id="text" rows="6" maxlength="2500" placeholder="أهلاً بيكم… النهاردة هقولكم على حاجة هتغير شغلكم."></textarea>
+      <div class="hint"><span id="charCount">0</span> حرف · <span id="estTime"></span></div>
+      <div class="row"><span class="hint">ترجمي النص مجاناً إلى:</span><select id="trTarget" class="narrow"><option value="ar-EG">🇪🇬 عامية مصرية</option><option value="en">🇬🇧 English</option><option value="ar">عربي فصحى</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="it">Italiano</option><option value="pt">Português</option><option value="tr">Türkçe</option><option value="ru">Русский</option><option value="hi">हिन्दी</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="sv">Svenska</option><option value="el">Ελληνικά</option><option value="he">עברית</option><option value="ms">Melayu</option><option value="sw">Kiswahili</option><option value="da">Dansk</option><option value="fi">Suomi</option><option value="no">Norsk</option></select><button class="btn" id="trBtn">🌍 ترجم</button></div>
+      <div class="row"><button class="btn primary" id="genBtn">🎧 ولّد الصوت</button><span id="genStatus" class="hint"></span></div>
+      <div id="result" hidden>
+        <audio controls id="resultAudio"></audio>
+        <div class="row"><a class="btn" id="downloadBtn" download>⬇️ تحميل</a><button class="btn" id="saveBtn">💾 حفظ في ملفاتي</button><button class="btn" id="toVideoBtn">🎬 اعمله فيديو</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-video">
+    <h1>فيديو بمزامنة شفاه</h1>
+    <p class="muted">صورة واضحة لوشك مواجهة للكاميرا (أو فيديو قصير ليكي) + الصوت = فيديو شفايفه ماشية مع الكلام.</p>
+    <div class="card">
+      <label>صورتك أو فيديوك</label><input type="file" id="faceFile" accept="image/*,video/*">
+      <label>الصوت</label><select id="videoAudio"></select>
+      <div class="row"><button class="btn primary" id="videoBtn">🎬 ولّد الفيديو</button><span id="videoStatus" class="hint"></span></div>
+      <div id="videoResult" hidden><video controls playsinline id="resultVideo"></video><div class="row"><a class="btn" id="videoDownload" download="sawtak_reel.mp4">⬇️ تحميل</a></div></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-library">
+    <h1>ملفاتي</h1>
+    <p class="muted">محفوظة في متصفحك. لو مسحتي بيانات الموقع هتتمسح.</p>
+    <div id="libraryList" class="list"></div>
+  </section>
+
+  <section class="tab" id="tab-settings">
+    <h1>المحرك</h1>
+    <div class="card">
+      <h3>🆓 المحرك المجاني</h3>
+      <p class="hint">الموقع ستاتيك، والذكاء الاصطناعي بيشتغل على جهازك أو على Google Colab. شغّلي المحرك مرة، هيطلعلك لينك توصيل، افتحيه وخلاص.</p>
+      <ul class="steps">
+        <li><b>على Colab (من غير تثبيت):</b> <a target="_blank" rel="noopener" href="https://colab.research.google.com/github/lioncoaching/cloning-voice/blob/main/engine/Sawtak_Engine_Colab.ipynb">افتحي النوتبوك</a> واختاري T4 GPU وشغّلي الخلايا.</li>
+        <li><b>على الكمبيوتر:</b> نزّلي <a target="_blank" rel="noopener" href="https://github.com/lioncoaching/cloning-voice/archive/refs/heads/main.zip">المشروع</a> وفكّي الضغط ودبل-كليك على <code>start-engine.bat</code>.</li>
+      </ul>
+      <label>رابط المحرك</label><input id="engineUrl" dir="ltr" placeholder="https://xxxx.trycloudflare.com">
+      <label>رمز المحرك</label><input id="engineToken" dir="ltr" type="password" autocomplete="off">
+      <div class="row"><button class="btn" id="engineTest">اختبار الاتصال</button></div>
+    </div>
+    <div class="card">
+      <h3>⭐ ElevenLabs (اختياري)</h3>
+      <label>API Key</label><input id="elKey" dir="ltr" type="password" placeholder="sk_…" autocomplete="off">
+      <p class="hint">بيتحفظ في متصفحك بس، وبيروح لـ api.elevenlabs.io مباشرة.</p>
+      <label>الموديل</label>
+      <select id="elModel">
+        <option value="eleven_multilingual_v2">eleven_multilingual_v2 (29 لغة، مستقر)</option>
+        <option value="eleven_v3">eleven_v3 (أكثر تعبيراً)</option>
+        <option value="eleven_flash_v2_5">eleven_flash_v2_5 (أسرع وأرخص)</option>
+      </select>
+      <div class="row3">
+        <div><label>Stability <span id="stabV"></span></label><input type="range" id="stab" min="0" max="1" step="0.05"></div>
+        <div><label>Similarity <span id="simV"></span></label><input type="range" id="sim" min="0" max="1" step="0.05"></div>
+        <div><label>Style <span id="styleV"></span></label><input type="range" id="style" min="0" max="1" step="0.05"></div>
+      </div>
+    </div>
+    <button class="btn primary" id="saveSettings">حفظ</button>
+  </section>
+</main>
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

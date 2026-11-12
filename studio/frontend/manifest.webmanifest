@@ -1,0 +1,14 @@
+{
+  "name": "Sawtak Studio",
+  "short_name": "Sawtak",
+  "description": "Clone your voice, speak any language, render lip-synced reels.",
+  "start_url": "/app",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#0b0f1a",
+  "theme_color": "#0b0f1a",
+  "icons": [
+    {"src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
