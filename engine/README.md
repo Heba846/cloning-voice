@@ -2,7 +2,7 @@
 
 A small FastAPI server the static site calls. Runs on your PC or on Colab, reached through a free
 Cloudflare quick tunnel (`*.trycloudflare.com`, no account). Every request needs the random token
-printed at start-up; CORS only allows `https://lioncoaching.github.io`.
+printed at start-up; CORS only allows `https://heba846.github.io`.
 
 | Endpoint | Body | Returns |
 |---|---|---|

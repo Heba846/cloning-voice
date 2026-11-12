@@ -23,4 +23,4 @@ studio/                         نسخة SaaS كاملة متعددة المست
 في كل الحالات المحرك بيطبع **لينك توصيل**، تفتحيه والموقع يتوصل لوحده. اللينك فيه رمز سري، متشاركيهوش.
 
 ## النشر
-Settings → Pages → Deploy from a branch → `main` / root. الموقع يبقى على `https://lioncoaching.github.io/cloning-voice/`.
+Settings → Pages → Deploy from a branch → `main` / root. الموقع يبقى على `https://heba846.github.io/cloning-voice/`.
