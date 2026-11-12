@@ -1,3 +1,6 @@
 # Optional: 22 more languages in the same cloned voice (French, Turkish, Hindi, …).
-# Installs its own pinned torch; best on a GPU (Colab T4).
-chatterbox-tts
+# Installs its own pinned torch (2.6); best on a GPU (Colab T4). Use a SEPARATE venv without omnivoice
+# (transformers pin conflict), see engine/README.md.
+chatterbox-tts==0.1.7
+numpy<2; python_version < "3.13"
+opencv-python-headless<4.12; python_version < "3.13"

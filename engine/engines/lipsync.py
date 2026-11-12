@@ -22,14 +22,20 @@ from ..config import MOCK, ROOT
 log = logging.getLogger("engine.lipsync")
 REPO = ROOT / "Wav2Lip"
 REPO_ZIP = "https://github.com/Rudrabha/Wav2Lip/archive/refs/heads/master.zip"
+REPO_GIT = "https://github.com/Rudrabha/Wav2Lip.git"
+PATCHED = ".sawtak_patched_v2"  # bump when _patch_repo changes
 CKPT = REPO / "checkpoints" / "wav2lip_gan.pth"
 S3FD = REPO / "face_detection" / "detection" / "sfd" / "s3fd.pth"
 
-# (huggingface repo, file) mirrors tried in order, then plain URLs.
+# (huggingface repo, file) mirrors tried in order, then plain URLs. All verified 2026-11 to serve the
+# same file. inference.py unpickles these (weights_only off), so every download is checked by SHA-256.
 CKPT_SOURCES = [("camenduru/Wav2Lip", "checkpoints/wav2lip_gan.pth"), ("Nekochu/Wav2Lip", "wav2lip_gan.pth"),
                 ("numz/wav2lip_studio", "Wav2lip/wav2lip_gan.pth")]
-S3FD_SOURCES = [("camenduru/Wav2Lip", "face_detection/detection/sfd/s3fd.pth"), ("Nekochu/Wav2Lip", "s3fd.pth"),
+S3FD_SOURCES = [("camenduru/Wav2Lip", "face_detection/detection/sfd/s3fd.pth"), ("rippertnt/wav2lip", "s3fd.pth"),
+                ("silveroxides/ComfyUI_wav2lip-models", "s3fd-619a316812.pth"),
                 "https://www.adrianbulat.com/downloads/python-fan/s3fd-619a316812.pth"]
+SHA256 = {CKPT.name: "ca9ab7b7b812c0e80a6e70a5977c545a1e8a365a6c49d5e533023c034d7ac3d8",
+          S3FD.name: "619a31681264d3f7f7fc7a16a42cbbe8b23f31a256f75a366e5a1bcd59b33543"}
 
 _lock = threading.Lock()
 
@@ -39,23 +45,37 @@ def available() -> bool:
     return MOCK or all(importlib.util.find_spec(m) for m in ("cv2", "librosa", "torch"))
 
 
+def _sha256(path: Path) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while chunk := f.read(1 << 20):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def _fetch(dest: Path, env_var: str, sources: list) -> None:
     if dest.exists():
         return
     dest.parent.mkdir(parents=True, exist_ok=True)
     override = os.getenv(env_var)
+    tmp = dest.with_suffix(".part")
     for src in ([override] if override else []) + sources:
         try:
             if isinstance(src, tuple):
                 from huggingface_hub import hf_hub_download
-                shutil.copy(hf_hub_download(*src), dest)
+                shutil.copy(hf_hub_download(*src), tmp)
             elif Path(src).exists():
-                shutil.copy(src, dest)
+                shutil.copy(src, tmp)
             else:
-                urllib.request.urlretrieve(src, dest)
+                urllib.request.urlretrieve(src, tmp)
+            if src != override and _sha256(tmp) != SHA256[dest.name]:  # a user-chosen file is trusted as is
+                raise ValueError("checksum mismatch")
+            tmp.replace(dest)
             log.info("downloaded %s from %s", dest.name, src)
             return
         except Exception as e:  # noqa: BLE001  try the next mirror
+            tmp.unlink(missing_ok=True)
             log.warning("could not get %s from %s: %s", dest.name, src, e)
     raise RuntimeError(f"تعذر تحميل {dest.name}. حطي رابط/مسار في {env_var}")
 
@@ -70,15 +90,26 @@ def _patch_repo() -> None:
     (REPO / "temp").mkdir(exist_ok=True)
 
 
-def setup() -> None:
-    if not REPO.exists():  # zip download: works on Windows without git
+def _download_repo() -> None:
+    try:  # zip download: works on Windows without git
         archive = ROOT / "wav2lip.zip"
         urllib.request.urlretrieve(REPO_ZIP, archive)
         with zipfile.ZipFile(archive) as z:
             z.extractall(ROOT)
         (ROOT / "Wav2Lip-master").rename(REPO)
         archive.unlink()
+    except Exception as e:  # noqa: BLE001  some networks refuse GitHub archives; git usually still works
+        log.warning("zip download failed (%s), trying git clone", e)
+        shutil.rmtree(ROOT / "Wav2Lip-master", ignore_errors=True)
+        subprocess.run(["git", "clone", "--depth", "1", REPO_GIT, str(REPO)], check=True)
+
+
+def setup() -> None:
+    if not REPO.exists():
+        _download_repo()
+    if not (REPO / PATCHED).exists():
         _patch_repo()
+        (REPO / PATCHED).write_text("ok")
     _fetch(CKPT, "WAV2LIP_CKPT", CKPT_SOURCES)
     _fetch(S3FD, "S3FD_CKPT", S3FD_SOURCES)
 

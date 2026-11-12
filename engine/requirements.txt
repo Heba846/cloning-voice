@@ -1,10 +1,11 @@
-# Core: server + Egyptian Arabic/English voice cloning + lip-sync + translation
+# Core: server + Egyptian Arabic/English voice cloning (OmniVoice) + lip-sync + translation
 fastapi>=0.110
 uvicorn>=0.29
 python-multipart>=0.0.9
 imageio-ffmpeg>=0.5
 huggingface-hub>=0.24
-cairo-tts==0.2.0
+omnivoice==0.2.1
+soundfile
 opencv-python-headless>=4.8
 librosa>=0.10
 numba

@@ -13,7 +13,7 @@ CODES = {"ar-EG": "arz_Arab", "ar": "arb_Arab", "en": "eng_Latn", "fr": "fra_Lat
 MODEL = "facebook/nllb-200-distilled-600M"
 
 _lock = threading.Lock()
-_pipe = None
+_model = None  # (tokenizer, model); transformers 5 removed the "translation" pipeline task
 
 
 def available() -> bool:
@@ -28,9 +28,15 @@ def translate(text: str, src: str, tgt: str) -> str:
         return f"[{tgt}] {text}"
     if src not in CODES or tgt not in CODES:
         raise LookupError(f"لغة غير مدعومة: {src} → {tgt}")
-    global _pipe
+    global _model
     with _lock:
-        if _pipe is None:
-            from transformers import pipeline
-            _pipe = pipeline("translation", model=MODEL)
-        return _pipe(text, src_lang=CODES[src], tgt_lang=CODES[tgt], max_length=1024)[0]["translation_text"]
+        if _model is None:
+            from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+            _model = AutoTokenizer.from_pretrained(MODEL), AutoModelForSeq2SeqLM.from_pretrained(MODEL).eval()
+        import torch
+        tok, model = _model
+        tok.src_lang = CODES[src]
+        batch = tok(text, return_tensors="pt", truncation=True, max_length=1024)
+        with torch.inference_mode():
+            ids = model.generate(**batch, forced_bos_token_id=tok.convert_tokens_to_ids(CODES[tgt]), max_length=1024)
+        return tok.batch_decode(ids, skip_special_tokens=True)[0]

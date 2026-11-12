@@ -104,7 +104,7 @@ async function refreshStatus() {
   if (!settings.engineUrl) { el.className = "status off"; el.textContent = "🔴 المحرك المجاني مش متوصل. افتحي تبويب ⚙️ المحرك وشغّليه (أو استخدمي ElevenLabs)."; return; }
   try {
     const h = await engine.health(); await engine.auth();
-    const parts = [h.gpu ? "GPU ⚡" : "CPU", h.tts.cairo ? "عامية + إنجليزي" : null, h.tts.chatterbox ? "+22 لغة" : null, h.lipsync ? "مزامنة شفاه" : null, h.mock ? "وضع تجريبي" : null].filter(Boolean);
+    const parts = [h.gpu ? "GPU ⚡" : "CPU", h.languages.includes("ar-EG") ? "عامية + إنجليزي" : null, h.tts.chatterbox ? "+22 لغة" : null, h.lipsync ? "مزامنة شفاه" : null, h.mock ? "وضع تجريبي" : null].filter(Boolean);
     el.className = "status on"; el.textContent = "🟢 المحرك متوصل · " + parts.join(" · ");
   } catch (e) { el.className = "status off"; el.textContent = "🔴 " + e.message; }
 }
